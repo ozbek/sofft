@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2010 Shuhrat Dehkanov
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="app_name">SOFFT</string>
+    <string name="app_fullname">Screen OFF Timeout</string>
+    <string name="never_timeout">Never timeout</string>
+    <string name="never_timeout_summary">Caution: letting screen stay on all the time depletes device\'s battery very fast!</string>
+    <string name="custom_timeout">Custom timeout</string>
+    <string name="custom_timeout_dialog_msg">Input screen off timeout (in minutes):</string>
+    <string name="options">Options</string>
+    <string name="default_timeout">Default timeout</string>
+    <string name="default_timeout_dialog_msg">Input default screen off timeout value that will be set when \'Never timeout\' option is disabled (in minutes):</string>
+</resources>
