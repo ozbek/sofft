@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
@@ -33,8 +34,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 public class OffTimeOut extends PreferenceActivity implements DialogInterface.OnDismissListener {
-    private CheckBoxPreference mCheckBoxPref;
-    private Preference mCustomPref;
+    private CheckBoxPreference mNeverTimeOutCheckBoxPref;
+    private CheckBoxPreference mStayOnWhilePluggedCheckBoxPref;
     private EditText editText;
     private InputMethodManager imm;
     private ContentResolver cr;
@@ -63,32 +64,40 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         }
 
         addPreferencesFromResource(R.xml.preference_screentimeout);
-        mCheckBoxPref = (CheckBoxPreference) getPreferenceScreen().findPreference("never");
-        mCustomPref = getPreferenceScreen().findPreference("custom");
+        mNeverTimeOutCheckBoxPref = (CheckBoxPreference) getPreferenceScreen().findPreference("never");
+        mStayOnWhilePluggedCheckBoxPref = (CheckBoxPreference) getPreferenceScreen().findPreference("plugged");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mCheckBoxPref.setChecked(Settings.System.getInt(cr,
+        mNeverTimeOutCheckBoxPref.setChecked(Settings.System.getInt(cr,
                 Settings.System.SCREEN_OFF_TIMEOUT, -1) == -1);
+        mStayOnWhilePluggedCheckBoxPref.setChecked(Settings.System.getInt(cr,
+                Settings.System.STAY_ON_WHILE_PLUGGED_IN, 0) != 0);
     }
 
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-        if (preference == mCheckBoxPref) {
-            if (mCheckBoxPref.isChecked()) {
-                Settings.System.putString(cr,
-                        Settings.System.SCREEN_OFF_TIMEOUT, "-1");
+        String key = preference.getKey();
+        if (preference == mNeverTimeOutCheckBoxPref) {
+            if (mNeverTimeOutCheckBoxPref.isChecked()) {
+                Settings.System.putInt(cr,
+                        Settings.System.SCREEN_OFF_TIMEOUT, -1);
             } else {
                 Settings.System.putInt(cr,
                         Settings.System.SCREEN_OFF_TIMEOUT,
                         Settings.System.getInt(cr, SCREEN_OFF_TIMEOUT, 60000));
             }
-        } else if (preference == mCustomPref) {
+        } else if ("custom".equals(key)) {
             showDialog(DIALOG_CUSTOM_TIMEOUT);
-        } else { // This should be last preference on the screen
+        } else if ("default_timeout".equals(key)) {
             showDialog(DIALOG_DEFAULT_TIMEOUT);
+        } else if (preference == mStayOnWhilePluggedCheckBoxPref) {
+            Settings.System.putInt(cr,
+                    Settings.System.STAY_ON_WHILE_PLUGGED_IN,
+                    mStayOnWhilePluggedCheckBoxPref.isChecked() ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB)
+                            : 0);
         }
 
         return false;

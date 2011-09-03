@@ -35,5 +35,11 @@
             android:key="default_timeout"
             android:title="@string/default_timeout"
             android:persistent="false" />
+        
+        <CheckBoxPreference
+            android:key="plugged"
+            android:title="@string/stay_on_while_plugged_in_title"
+            android:summary="@string/stay_on_while_plugged_in_summary"
+            android:persistent="false" />
     </PreferenceCategory>
 </PreferenceScreen>
