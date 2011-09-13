@@ -33,6 +33,12 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
+/**
+ * A simple screen time out controller.
+ * Unlike Android's default screen time out settings,
+ * this class provides an input form where users can put
+ * desired screen time out threshold in minutes.
+ */
 public class OffTimeOut extends PreferenceActivity implements DialogInterface.OnDismissListener {
     private CheckBoxPreference mNeverTimeOutCheckBoxPref;
     private CheckBoxPreference mStayOnWhilePluggedCheckBoxPref;
