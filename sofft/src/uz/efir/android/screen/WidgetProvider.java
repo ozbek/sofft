@@ -195,17 +195,12 @@ public class WidgetProvider extends AppWidgetProvider {
         		return Settings.System.getInt(context.getContentResolver(),
         				Settings.System.SCREEN_OFF_TIMEOUT) < 0;
         	} catch (Exception e) {
-        		Log.d(TAG, "get stay on mode: " + e);
+        		Log.d(TAG, "get screen off timeout: " + e);
         	}
         	return false;
         case BUTTON_STAY_ON:
-        	try {
-        		return Settings.System.getInt(context.getContentResolver(),
-        				Settings.System.STAY_ON_WHILE_PLUGGED_IN) > 0;
-        	} catch (Exception e) {
-        		Log.d(TAG, "get stay on mode: " + e);
-        	}
-        	return false;
+        	return Settings.System.getInt(context.getContentResolver(),
+        				Settings.System.STAY_ON_WHILE_PLUGGED_IN, 0) > 0;
         default:
         	Log.e(TAG, "Can not get mode (returning false). What was it? " + which);
         	return false;

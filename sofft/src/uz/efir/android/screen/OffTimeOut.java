@@ -21,7 +21,6 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.os.BatteryManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -30,7 +29,6 @@ import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 /**
@@ -43,29 +41,26 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
     private CheckBoxPreference mNeverTimeOutCheckBoxPref;
     private CheckBoxPreference mStayOnWhilePluggedCheckBoxPref;
     private EditText editText;
-    private InputMethodManager imm;
     private ContentResolver cr;
     private static final int DIALOG_CUSTOM_TIMEOUT = 101;
     private static final int DIALOG_DEFAULT_TIMEOUT = 202;
-    private static final String SCREEN_OFF_TIMEOUT = "uz_efir_screen_off";
+    private static final String SOFFT_ROW_NAME = "uz_efir_screen_off";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.app_fullname);
 
-        this.setTitle(R.string.app_fullname);
-        imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         cr = getContentResolver();
-
         try {
-            Settings.System.getInt(cr, SCREEN_OFF_TIMEOUT);
+            Settings.System.getInt(cr, SOFFT_ROW_NAME);
         } catch (SettingNotFoundException snfe1) {
             try {
                 int settingsValue = Settings.System.getInt(cr, Settings.System.SCREEN_OFF_TIMEOUT);
-                Settings.System.putInt(cr, SCREEN_OFF_TIMEOUT, settingsValue);
+                Settings.System.putInt(cr, SOFFT_ROW_NAME, settingsValue);
             } catch (SettingNotFoundException snfe2) {
                 // OK, give up and just set it as one minute!
-                Settings.System.putInt(cr, SCREEN_OFF_TIMEOUT, 60000);
+                Settings.System.putInt(cr, SOFFT_ROW_NAME, 60000);
             }
         }
 
@@ -86,27 +81,27 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         String key = preference.getKey();
-        if (preference == mNeverTimeOutCheckBoxPref) {
+        if (preference.equals(mNeverTimeOutCheckBoxPref)) {
             if (mNeverTimeOutCheckBoxPref.isChecked()) {
                 Settings.System.putInt(cr,
                         Settings.System.SCREEN_OFF_TIMEOUT, -1);
             } else {
                 Settings.System.putInt(cr,
                         Settings.System.SCREEN_OFF_TIMEOUT,
-                        Settings.System.getInt(cr, SCREEN_OFF_TIMEOUT, 60000));
+                        Settings.System.getInt(cr, SOFFT_ROW_NAME, 60000));
             }
         } else if ("custom".equals(key)) {
             showDialog(DIALOG_CUSTOM_TIMEOUT);
         } else if ("default_timeout".equals(key)) {
             showDialog(DIALOG_DEFAULT_TIMEOUT);
-        } else if (preference == mStayOnWhilePluggedCheckBoxPref) {
+        } else if (preference.equals(mStayOnWhilePluggedCheckBoxPref)) {
             Settings.System.putInt(cr,
                     Settings.System.STAY_ON_WHILE_PLUGGED_IN,
                     mStayOnWhilePluggedCheckBoxPref.isChecked() ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB)
                             : 0);
         }
 
-        return false;
+        return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
     @Override
@@ -132,7 +127,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                                     userInput = userInput * 60 * 1000;
                                 } catch (NumberFormatException nfe) {
                                     // Snap, something went wrong!
-                                    userInput = Settings.System.getInt(cr, SCREEN_OFF_TIMEOUT, 60000);
+                                    userInput = Settings.System.getInt(cr, SOFFT_ROW_NAME, 60000);
                                 }
                                 
                                 if (!(userInput <= 0)) {
@@ -175,7 +170,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                                 }
 
                                 if (!(userInput <= 0))
-                                    Settings.System.putInt(cr, SCREEN_OFF_TIMEOUT, userInput);
+                                    Settings.System.putInt(cr, SOFFT_ROW_NAME, userInput);
                             }
 
                             dialog.dismiss();
@@ -198,6 +193,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
     @Override
     protected void onPrepareDialog(int id, Dialog dialog) {
         dialog.setOnDismissListener(this);
+        //final InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         String defText="";
         int currentValue = 0;
         switch (id) {
@@ -217,7 +213,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
 
             case DIALOG_DEFAULT_TIMEOUT:
                 currentValue = Settings.System.getInt(cr,
-                        SCREEN_OFF_TIMEOUT, 60000);
+                        SOFFT_ROW_NAME, 60000);
                 if (currentValue <= 0) break;
 
                 defText = new Integer(currentValue / (60 * 1000)).toString();
@@ -228,15 +224,14 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
 
         editText.setText(defText);
         editText.selectAll();
-        Handler handler = new Handler();
+        /*Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
-                imm.showSoftInput(editText, 1);
+                imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
             }
-        }, 200);
+        }, 200);*/
     }
 
-    @Override
     public void onDismiss(DialogInterface dialogInterface) {
         /* There is that crazy bug that I could not figure out...
          * That dialogs do not get cleared when dismissed
