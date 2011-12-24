@@ -90,6 +90,8 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                         Settings.System.SCREEN_OFF_TIMEOUT,
                         Settings.System.getInt(cr, SOFFT_ROW_NAME, 60000));
             }
+            // Update widget button's state
+            WidgetProvider.updateWidget(this);
         } else if ("custom".equals(key)) {
             showDialog(DIALOG_CUSTOM_TIMEOUT);
         } else if ("default_timeout".equals(key)) {
@@ -99,6 +101,8 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                     Settings.System.STAY_ON_WHILE_PLUGGED_IN,
                     mStayOnWhilePluggedCheckBoxPref.isChecked() ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB)
                             : 0);
+            // Update widget button's state
+            WidgetProvider.updateWidget(this);
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
