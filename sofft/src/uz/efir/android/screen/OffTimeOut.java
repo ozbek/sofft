@@ -21,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -29,6 +30,7 @@ import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 /**
@@ -197,7 +199,6 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
     @Override
     protected void onPrepareDialog(int id, Dialog dialog) {
         dialog.setOnDismissListener(this);
-        //final InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         String defText="";
         int currentValue = 0;
         switch (id) {
@@ -228,12 +229,13 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
 
         editText.setText(defText);
         editText.selectAll();
-        /*Handler handler = new Handler();
+        Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
-                imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+            	InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+            	imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
             }
-        }, 200);*/
+        }, 200);
     }
 
     public void onDismiss(DialogInterface dialogInterface) {
