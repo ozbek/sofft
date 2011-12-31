@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2012 Shuhrat Dehkanov
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="app_fullname">화면 조명 시간</string>
+    <string name="never_timeout">항상 켜짐</string>
+    <string name="never_timeout_summary">주의: 화면을 항상 켜짐으로 조정하면 배터리가 매우 빠르게 고갈시킬수 있습니다!</string>
+    <string name="custom_timeout">지정 조명 시간</string>
+    <string name="custom_timeout_dialog_msg">화면 조명 시간을 입력하세요 (분):</string>
+    <string name="options">옵션</string>
+    <string name="default_timeout">기본 조명 시간</string>
+    <string name="default_timeout_dialog_msg">\'항상 켜짐\' 옵션이 해제되었을 때 조정되는 기본 조명 시간을 입력하세요 (분):</string>
+    <string name="stay_on_while_plugged_in_title">켜진 상태로 유지</string>
+    <string name="stay_on_while_plugged_in_summary">충전하는 동안 화면이 꺼지지 않음</string>
+</resources>

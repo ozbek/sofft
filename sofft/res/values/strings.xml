@@ -17,12 +17,12 @@
     <string name="app_name">SOFFT</string>
     <string name="app_fullname">Screen OFF Timeout</string>
     <string name="never_timeout">Never timeout</string>
-    <string name="never_timeout_summary">Caution: letting screen stay on all the time depletes the device\'s battery very fast!</string>
+    <string name="never_timeout_summary">Caution: letting screen stay on all the time depletes the battery very fast!</string>
     <string name="custom_timeout">Custom timeout</string>
     <string name="custom_timeout_dialog_msg">Input screen off timeout (in minutes):</string>
     <string name="options">Options</string>
     <string name="default_timeout">Default timeout</string>
     <string name="default_timeout_dialog_msg">Input default screen off timeout value that will be set when \'Never timeout\' option is disabled (in minutes):</string>
     <string name="stay_on_while_plugged_in_title">Stay on</string>
-    <string name="stay_on_while_plugged_in_summary">Keep the screen on while the device is plugged in</string>
+    <string name="stay_on_while_plugged_in_summary">Keep the screen on while charging</string>
 </resources>
