@@ -32,6 +32,7 @@
 
         <ImageView
             android:id="@+id/img_never_timeout"
+            android:contentDescription="@string/never_timeout"
             android:layout_width="fill_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
@@ -64,6 +65,7 @@
 
         <ImageView
             android:id="@+id/img_stayon"
+            android:contentDescription="@string/stay_on_while_plugged_in_title"
             android:layout_width="fill_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
