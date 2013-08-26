@@ -20,6 +20,7 @@ import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
@@ -28,7 +29,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -42,8 +42,8 @@ import android.widget.EditText;
 public class OffTimeOut extends PreferenceActivity implements DialogInterface.OnDismissListener {
     private CheckBoxPreference mNeverTimeOutCheckBoxPref;
     private CheckBoxPreference mStayOnWhilePluggedCheckBoxPref;
-    private EditText editText;
-    private ContentResolver cr;
+    private EditText mEditText;
+    private ContentResolver mContentResolver;
     private static final int DIALOG_CUSTOM_TIMEOUT = 101;
     private static final int DIALOG_DEFAULT_TIMEOUT = 202;
     private static final String SOFFT_ROW_NAME = "uz_efir_screen_off";
@@ -53,31 +53,36 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         super.onCreate(savedInstanceState);
         setTitle(R.string.app_fullname);
 
-        cr = getContentResolver();
+        mContentResolver = getContentResolver();
         try {
-            Settings.System.getInt(cr, SOFFT_ROW_NAME);
+            Settings.System.getInt(mContentResolver, SOFFT_ROW_NAME);
         } catch (SettingNotFoundException snfe1) {
             try {
-                int settingsValue = Settings.System.getInt(cr, Settings.System.SCREEN_OFF_TIMEOUT);
-                Settings.System.putInt(cr, SOFFT_ROW_NAME, settingsValue);
+                int settingsValue = Settings.System.getInt(mContentResolver, Settings.System.SCREEN_OFF_TIMEOUT);
+                Settings.System.putInt(mContentResolver, SOFFT_ROW_NAME, settingsValue);
             } catch (SettingNotFoundException snfe2) {
                 // OK, give up and just set it as one minute!
-                Settings.System.putInt(cr, SOFFT_ROW_NAME, 60000);
+                Settings.System.putInt(mContentResolver, SOFFT_ROW_NAME, 60000);
             }
         }
 
         addPreferencesFromResource(R.xml.preference_screentimeout);
-        mNeverTimeOutCheckBoxPref = (CheckBoxPreference) getPreferenceScreen().findPreference("never");
-        mStayOnWhilePluggedCheckBoxPref = (CheckBoxPreference) getPreferenceScreen().findPreference("plugged");
+        mNeverTimeOutCheckBoxPref = (CheckBoxPreference)getPreferenceScreen().findPreference("never");
+        mStayOnWhilePluggedCheckBoxPref = (CheckBoxPreference)getPreferenceScreen().findPreference("plugged");
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+            // STAY_ON_WHILE_PLUGGED_IN is moved to Global table in API level 17
+            mStayOnWhilePluggedCheckBoxPref.setEnabled(false);
+            mStayOnWhilePluggedCheckBoxPref.setSummary(R.string.stay_on_while_plugged_in_disabled_summary);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mNeverTimeOutCheckBoxPref.setChecked(Settings.System.getInt(cr,
+        mNeverTimeOutCheckBoxPref.setChecked(Settings.System.getInt(mContentResolver,
                 Settings.System.SCREEN_OFF_TIMEOUT, -1) == -1);
-        mStayOnWhilePluggedCheckBoxPref.setChecked(Settings.System.getInt(cr,
-                Settings.System.STAY_ON_WHILE_PLUGGED_IN, 0) != 0);
+        mStayOnWhilePluggedCheckBoxPref.setChecked(Settings.System.getInt(mContentResolver, Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN
+                ? Settings.Global.STAY_ON_WHILE_PLUGGED_IN : Settings.System.STAY_ON_WHILE_PLUGGED_IN, 0) != 0);
     }
 
     @Override
@@ -85,12 +90,10 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         String key = preference.getKey();
         if (preference.equals(mNeverTimeOutCheckBoxPref)) {
             if (mNeverTimeOutCheckBoxPref.isChecked()) {
-                Settings.System.putInt(cr,
-                        Settings.System.SCREEN_OFF_TIMEOUT, -1);
+                Settings.System.putInt(mContentResolver, Settings.System.SCREEN_OFF_TIMEOUT, -1);
             } else {
-                Settings.System.putInt(cr,
-                        Settings.System.SCREEN_OFF_TIMEOUT,
-                        Settings.System.getInt(cr, SOFFT_ROW_NAME, 60000));
+                Settings.System.putInt(mContentResolver, Settings.System.SCREEN_OFF_TIMEOUT,
+                        Settings.System.getInt(mContentResolver, SOFFT_ROW_NAME, 60000));
             }
             // Update widget button's state
             WidgetProvider.updateWidget(this);
@@ -99,10 +102,9 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         } else if ("default_timeout".equals(key)) {
             showDialog(DIALOG_DEFAULT_TIMEOUT);
         } else if (preference.equals(mStayOnWhilePluggedCheckBoxPref)) {
-            Settings.System.putInt(cr,
-                    Settings.System.STAY_ON_WHILE_PLUGGED_IN,
-                    mStayOnWhilePluggedCheckBoxPref.isChecked() ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB)
-                            : 0);
+            Settings.System.putInt(mContentResolver, Settings.System.STAY_ON_WHILE_PLUGGED_IN,
+                    mStayOnWhilePluggedCheckBoxPref.isChecked()
+                    ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB) : 0);
             // Update widget button's state
             WidgetProvider.updateWidget(this);
         }
@@ -112,12 +114,11 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
 
     @Override
     protected Dialog onCreateDialog (int id) {
-        LayoutInflater layoutInflater = LayoutInflater.from(this);
-        final View textInputView = layoutInflater.inflate(R.layout.dialog, null);
+        final View textInputView = getLayoutInflater().inflate(R.layout.dialog, null);
 
         switch (id) {
             case DIALOG_CUSTOM_TIMEOUT:
-                editText = (EditText)textInputView.findViewById(R.id.custom_box);
+                mEditText = (EditText)textInputView.findViewById(R.id.custom_box);
                 textInputView.findViewById(R.id.default_box).setVisibility(View.GONE);
                 return new AlertDialog.Builder(this)
                     .setView(textInputView)
@@ -125,7 +126,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                     .setMessage(R.string.custom_timeout_dialog_msg)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            String inputString = editText.getText().toString();
+                            String inputString = mEditText.getText().toString();
                             if (inputString.length() > 0) { // Skip if nothing was entered
                                 int userInput;
                                 try {
@@ -133,18 +134,18 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                                     userInput = userInput * 60 * 1000;
                                 } catch (NumberFormatException nfe) {
                                     // Snap, something went wrong!
-                                    userInput = Settings.System.getInt(cr, SOFFT_ROW_NAME, 60000);
+                                    userInput = Settings.System.getInt(mContentResolver, SOFFT_ROW_NAME, 60000);
                                 }
-                                
-                                if (!(userInput <= 0)) {
+
+                                if (userInput > 0) {
                                     /* Use the value only if it is something positive.
                                      * Don't be fooled by inputString.length() > 0 above.
                                      * Users are *crazy*, they will try to input several 'zero's just to see what will happen.
-                                     */                                     
-                                    Settings.System.putInt(cr, Settings.System.SCREEN_OFF_TIMEOUT, userInput);
+                                     */
+                                    Settings.System.putInt(mContentResolver, Settings.System.SCREEN_OFF_TIMEOUT, userInput);
                                 }
                             }
-                            
+
                             dialog.dismiss();
                         }
                     })
@@ -156,7 +157,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                     .create();
 
             case DIALOG_DEFAULT_TIMEOUT:
-                editText = (EditText)textInputView.findViewById(R.id.default_box);
+                mEditText = (EditText)textInputView.findViewById(R.id.default_box);
                 textInputView.findViewById(R.id.custom_box).setVisibility(View.GONE);
                 return new AlertDialog.Builder(this)
                     .setView(textInputView)
@@ -165,18 +166,19 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // See the comments above
-                            String inputString = editText.getText().toString();
+                            String inputString = mEditText.getText().toString();
                             if (inputString.length() > 0) {
                                 int userInput;
                                 try {
                                     userInput = Integer.parseInt(inputString);
                                     userInput = userInput * 60 * 1000;
                                 } catch (NumberFormatException nfe) {
-                                    userInput = Settings.System.getInt(cr, Settings.System.SCREEN_OFF_TIMEOUT, 60000);
+                                    userInput = Settings.System.getInt(mContentResolver, Settings.System.SCREEN_OFF_TIMEOUT, 60000);
                                 }
 
-                                if (!(userInput <= 0))
-                                    Settings.System.putInt(cr, SOFFT_ROW_NAME, userInput);
+                                if (userInput > 0) {
+                                    Settings.System.putInt(mContentResolver, SOFFT_ROW_NAME, userInput);
+                                }
                             }
 
                             dialog.dismiss();
@@ -199,41 +201,44 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
     @Override
     protected void onPrepareDialog(int id, Dialog dialog) {
         dialog.setOnDismissListener(this);
-        String defText="";
+        String defText= "";
         int currentValue = 0;
         switch (id) {
             case DIALOG_CUSTOM_TIMEOUT:
-                currentValue = Settings.System.getInt(cr,
-                        Settings.System.SCREEN_OFF_TIMEOUT, 60000);
-                if (currentValue <= 0) break; // So that we won't have to do all the heck routines below 
+                currentValue = Settings.System.getInt(mContentResolver, Settings.System.SCREEN_OFF_TIMEOUT, 60000);
+                if (currentValue <= 0) {
+                    // So that we won't have to do all the routines below
+                    break;
+                }
 
-                defText = new Integer(currentValue / (60 * 1000)).toString();
+                defText = String.valueOf(currentValue / (60 * 1000));
                 if (currentValue < 60000) {
                     /* If the current screen timeout value is less than 60 seconds
                      * show it as a fraction of a minute
-                     */                     
-                    defText = new Double(currentValue / (60.0 * 1000)).toString();
+                     */
+                    defText = String.valueOf(currentValue / (60.0 * 1000));
                 }
                 break;
 
             case DIALOG_DEFAULT_TIMEOUT:
-                currentValue = Settings.System.getInt(cr,
-                        SOFFT_ROW_NAME, 60000);
-                if (currentValue <= 0) break;
+                currentValue = Settings.System.getInt(mContentResolver, SOFFT_ROW_NAME, 60000);
+                if (currentValue <= 0) {
+                    break;
+                }
 
-                defText = new Integer(currentValue / (60 * 1000)).toString();
+                defText = String.valueOf(currentValue / (60 * 1000));
                 if (currentValue < 60000) {
-                    defText = new Double(currentValue / (60.0 * 1000)).toString();
+                    defText = String.valueOf(currentValue / (60.0 * 1000));
                 }
         } // End switch
 
-        editText.setText(defText);
-        editText.selectAll();
+        mEditText.setText(defText);
+        mEditText.selectAll();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
-            	InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-            	imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                imm.showSoftInput(mEditText, InputMethodManager.SHOW_IMPLICIT);
             }
         }, 200);
     }
@@ -242,7 +247,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         /* There is that crazy bug that I could not figure out...
          * That dialogs do not get cleared when dismissed
          * So, remove them here and enjoy the rest of the party!
-         */                  
+         */
         removeDialog(DIALOG_CUSTOM_TIMEOUT);
         removeDialog(DIALOG_DEFAULT_TIMEOUT);
     }

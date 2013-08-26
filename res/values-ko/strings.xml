@@ -24,4 +24,5 @@
     <string name="default_timeout_dialog_msg">\'항상 켜짐\' 옵션이 해제되었을 때 조정되는 기본 조명 시간을 입력하세요 (분):</string>
     <string name="stay_on_while_plugged_in_title">켜진 상태로 유지</string>
     <string name="stay_on_while_plugged_in_summary">충전하는 동안 화면이 꺼지지 않음</string>
+    <string name="stay_on_while_plugged_in_disabled_summary">이 옵션은 더 이상 지원되지 않습니다. 미안 해요.</string>
 </resources>
