@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="app_name">SOFFT</string>
+    <string name="app_name" translatable="false">SOFFT</string>
     <string name="app_fullname">Screen OFF Timeout</string>
     <string name="never_timeout">Never timeout</string>
     <string name="never_timeout_summary">Caution: letting screen stay on all the time depletes the battery very fast!</string>
