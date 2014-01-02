@@ -125,6 +125,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                     .setTitle(R.string.custom_timeout)
                     .setMessage(R.string.custom_timeout_dialog_msg)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int which) {
                             String inputString = mEditText.getText().toString();
                             if (inputString.length() > 0) { // Skip if nothing was entered
@@ -164,6 +165,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                     .setTitle(R.string.default_timeout)
                     .setMessage(R.string.default_timeout_dialog_msg)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int which) {
                             // See the comments above
                             String inputString = mEditText.getText().toString();
@@ -185,6 +187,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
@@ -236,6 +239,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         mEditText.selectAll();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
+            @Override
             public void run() {
                 InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
                 imm.showSoftInput(mEditText, InputMethodManager.SHOW_IMPLICIT);
@@ -243,6 +247,7 @@ public class OffTimeOut extends PreferenceActivity implements DialogInterface.On
         }, 200);
     }
 
+    @Override
     public void onDismiss(DialogInterface dialogInterface) {
         /* There is that crazy bug that I could not figure out...
          * That dialogs do not get cleared when dismissed

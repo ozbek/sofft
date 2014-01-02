@@ -43,39 +43,43 @@ public class WidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds) {
         // Update each requested appWidgetId
-        RemoteViews view = buildUpdate(context, -1);
+        RemoteViews view = buildUpdate(context);
 
-        for (int i = 0; i < appWidgetIds.length; i++) {
-            appWidgetManager.updateAppWidget(appWidgetIds[i], view);
+        for (int appWidgetId : appWidgetIds) {
+            appWidgetManager.updateAppWidget(appWidgetId, view);
         }
     }
 
     @Override
     public void onEnabled(Context context) {
         PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(SOFFT_APPWIDGET,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP);
+        if (pm != null) {
+            pm.setComponentEnabledSetting(SOFFT_APPWIDGET,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
     }
 
     @Override
     public void onDisabled(Context context) {
         PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(SOFFT_APPWIDGET,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP);
+        if (pm != null) {
+            pm.setComponentEnabledSetting(SOFFT_APPWIDGET,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
     }
 
     /**
      * Load image for given widget and build {@link RemoteViews} for it.
      */
-    static RemoteViews buildUpdate(Context context, int appWidgetId) {
+    static RemoteViews buildUpdate(Context context) {
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.widget);
         views.setOnClickPendingIntent(R.id.btn_never_timeout,
-        		getLaunchPendingIntent(context, appWidgetId, BUTTON_NEVER_TIMEOUT));
+                getLaunchPendingIntent(context, BUTTON_NEVER_TIMEOUT));
         views.setOnClickPendingIntent(R.id.btn_stayon,
-                getLaunchPendingIntent(context, appWidgetId, BUTTON_STAY_ON));
+                getLaunchPendingIntent(context, BUTTON_STAY_ON));
 
         updateButtons(views, context);
         return views;
@@ -84,20 +88,22 @@ public class WidgetProvider extends AppWidgetProvider {
     /**
      * Updates the widget when something changes, or when a button is pushed.
      *
-     * @param context
+     * @param context   The Context
      */
     public static void updateWidget(Context context) {
-        RemoteViews views = buildUpdate(context, -1);
+        RemoteViews views = buildUpdate(context);
         // Update specific list of appWidgetIds if given, otherwise default to all
         final AppWidgetManager gm = AppWidgetManager.getInstance(context);
-        gm.updateAppWidget(SOFFT_APPWIDGET, views);
+        if (gm != null) {
+            gm.updateAppWidget(SOFFT_APPWIDGET, views);
+        }
     }
 
     /**
      * Updates the buttons based on the current database value.
      *
      * @param views   The RemoteViews to update.
-     * @param context
+     * @param context   The Context
      */
     private static void updateButtons(RemoteViews views, Context context) {
 
@@ -129,31 +135,29 @@ public class WidgetProvider extends AppWidgetProvider {
     /**
      * Creates PendingIntent to notify the widget of a button click.
      *
-     * @param context
-     * @param appWidgetId
-     * @return
+     *
+     * @param context    The Context
+     * @return  PendingIntent
      */
-    private static PendingIntent getLaunchPendingIntent(Context context, int appWidgetId,
-            int buttonId) {
+    private static PendingIntent getLaunchPendingIntent(Context context, int buttonId) {
         Intent launchIntent = new Intent();
         launchIntent.setClass(context, WidgetProvider.class);
         launchIntent.addCategory(Intent.CATEGORY_ALTERNATIVE);
         launchIntent.setData(Uri.parse("custom:" + buttonId));
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0 /* no requestCode */,
+        return PendingIntent.getBroadcast(context, 0 /* no requestCode */,
                 launchIntent, 0 /* no flags */);
-        return pi;
     }
 
     /**
      * Receives and processes a button pressed intent or state change.
      *
-     * @param context
+     * @param context   The Context
      * @param intent  Indicates the pressed button.
      */
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (intent.hasCategory(Intent.CATEGORY_ALTERNATIVE)) {
+        if (intent.hasCategory(Intent.CATEGORY_ALTERNATIVE) && intent.getData() != null) {
             toggleMode(context,
                     Integer.parseInt(intent.getData().getSchemeSpecificPart()));
         } else {
@@ -170,7 +174,7 @@ public class WidgetProvider extends AppWidgetProvider {
     /**
      * Gets state of SCREEN_OFF_TIMEOUT and STAY_ON_WHILE_PLUGGED_IN modes.
      *
-     * @param context
+     * @param context   The Context
      * @param which SCREEN_OFF_TIMEOUT or STAY_ON_WHILE_PLUGGED_IN
      * @return true if SCREEN_OFF_TIMEOUT is -1 (never time out) or STAY_ON_WHILE_PLUGGED_IN mode is on.
      */
@@ -183,7 +187,7 @@ public class WidgetProvider extends AppWidgetProvider {
                     Log.d(TAG, "SCREEN_OFF_TIMEOUT row is not found");
                 }
             return false;
-        } else { // which == BUTTON_STAY_ON (there is no other option, but this) 
+        } else { // which == BUTTON_STAY_ON (there is no other option, but this)
             return Settings.System.getInt(context.getContentResolver(),
                     Settings.System.STAY_ON_WHILE_PLUGGED_IN, 0) > 0;
         }
@@ -192,7 +196,7 @@ public class WidgetProvider extends AppWidgetProvider {
     /**
      * Change SCREEN_OFF_TIMEOUT and STAY_ON_WHILE_PLUGGED_IN modes.
      *
-     * @param context
+     * @param context   The Context
      * @param whichButton SCREEN_OFF_TIMEOUT or STAY_ON_WHILE_PLUGGED_IN
      */
     private void toggleMode(Context context, int whichButton) {
